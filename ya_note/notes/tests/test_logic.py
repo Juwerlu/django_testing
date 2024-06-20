@@ -9,13 +9,13 @@ from notes.tests.overall import LogicFixture, UserInteractionLogicFixture
 
 class TestLogic(LogicFixture):
 
-    def data_create(self, note_list=None):
-        if note_list is None:
+    def data_create(self, pop_list=None):
+        if pop_list is None:
             self.client.force_login(self.author)
             response = self.client.post(self.url, data=self.form_data)
             self.assertRedirects(response, reverse('notes:success'))
         else:
-            for item in note_list:
+            for item in pop_list:
                 self.form_data.pop(item)
             self.client.force_login(self.author)
             response = self.client.post(self.url, data=self.form_data)
