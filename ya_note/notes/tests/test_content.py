@@ -1,5 +1,7 @@
 from django.urls import reverse
-from notes.tests.overall import RoutesFixture
+
+from notes.forms import NoteForm
+from notes.tests.common import RoutesFixture
 
 
 class TestContent(RoutesFixture):
@@ -12,18 +14,18 @@ class TestContent(RoutesFixture):
             ('notes:edit', (self.note.slug,)),
         )
         for name, args in urls:
-            self.login_user(self.author)
+            self.client.force_login(self.author)
             response = self.client.get(reverse(name, args=args))
             self.assertIn('form', response.context)
+            self.assertIsInstance(response.context['form'], NoteForm)
 
     def test_note_objects(self):
-        objects = (
-            ((self.author), 1),
-            ((self.reader), 0),
+        user_status = (
+            ((self.author), self.assertIn),
+            ((self.reader), self.assertNotIn),
         )
-        for user, count in objects:
-            self.login_user(user)
+        for user, fun in user_status:
+            self.client.force_login(user)
             response = self.client.get(self.LIST_URL)
             object_list = response.context['object_list']
-            notes_count = object_list.count()
-            self.assertEqual(notes_count, count)
+            fun(self.note, object_list)

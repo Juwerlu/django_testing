@@ -5,7 +5,14 @@ from django.conf import settings
 from django.test.client import Client
 from django.urls import reverse
 from django.utils.timezone import now
+
 from news.models import Comment, News
+
+
+@pytest.fixture
+def anonym_client():
+    client = Client()
+    return client
 
 
 @pytest.fixture
@@ -66,15 +73,25 @@ def news_list():
 
 @pytest.fixture
 def comments_list(author, news):
-    for index in range(2):
-        comment = Comment.objects.create(
+    return Comment.objects.bulk_create(
+        Comment(
             news=news,
             author=author,
             text='Comment Text',
+            created=now() + timedelta(days=index)
         )
-        comment.created = now() + timedelta(days=index)
-        comment.save()
-    return comments_list
+        for index in range(2)
+    )
+
+
+@pytest.fixture
+def id_news_for_args(news):
+    return (news.id, )
+
+
+@pytest.fixture
+def id_comment_for_args(comment):
+    return (comment.id, )
 
 
 @pytest.fixture

@@ -23,31 +23,29 @@ def test_redirects(client, name, comment_object):
 
 
 @pytest.mark.parametrize(
-    'user, name, status, args',
+    'client, name, status, args',
     (
-        (None, 'news:home', HTTPStatus.OK, None),
-        (None, 'news:detail',
-         HTTPStatus.OK, pytest.lazy_fixture('news')),
-        (None, 'users:login', HTTPStatus.OK, None),
-        (None, 'users:logout', HTTPStatus.OK, None),
-        (None, 'users:signup', HTTPStatus.OK, None),
-        (pytest.lazy_fixture('not_author_client'),
-         'news:edit', HTTPStatus.NOT_FOUND, pytest.lazy_fixture('comment')),
-        (pytest.lazy_fixture('not_author_client'),
-         'news:delete', HTTPStatus.NOT_FOUND, pytest.lazy_fixture('comment')),
-        (pytest.lazy_fixture('author_client'),
-         'news:edit', HTTPStatus.OK, pytest.lazy_fixture('comment')),
-        (pytest.lazy_fixture('author_client'),
-         'news:delete', HTTPStatus.OK, pytest.lazy_fixture('comment')),
+        (pytest.lazy_fixture('anonym_client'), 'news:home',
+         HTTPStatus.OK, None),
+        (pytest.lazy_fixture('anonym_client'), 'news:detail',
+         HTTPStatus.OK, pytest.lazy_fixture('id_news_for_args')),
+        (pytest.lazy_fixture('anonym_client'), 'users:login',
+         HTTPStatus.OK, None),
+        (pytest.lazy_fixture('anonym_client'), 'users:logout',
+         HTTPStatus.OK, None),
+        (pytest.lazy_fixture('anonym_client'), 'users:signup',
+         HTTPStatus.OK, None),
+        (pytest.lazy_fixture('not_author_client'), 'news:edit',
+         HTTPStatus.NOT_FOUND, pytest.lazy_fixture('id_comment_for_args')),
+        (pytest.lazy_fixture('not_author_client'), 'news:delete',
+         HTTPStatus.NOT_FOUND, pytest.lazy_fixture('id_comment_for_args')),
+        (pytest.lazy_fixture('author_client'), 'news:edit',
+         HTTPStatus.OK, pytest.lazy_fixture('id_comment_for_args')),
+        (pytest.lazy_fixture('author_client'), 'news:delete',
+         HTTPStatus.OK, pytest.lazy_fixture('id_comment_for_args')),
     )
 )
-def test_home_availability_for_users(client, user, name, status, args):
-    if args is not None:
-        url = reverse(name, args=(args.id,))
-    else:
-        url = reverse(name)
-    if user is not None:
-        response = user.get(url)
-    else:
-        response = client.get(url)
+def test_home_availability_for_users(client, name, status, args):
+    url = reverse(name, args=args)
+    response = client.get(url)
     assert response.status_code == status
