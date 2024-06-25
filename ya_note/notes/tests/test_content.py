@@ -24,8 +24,8 @@ class TestContent(RoutesFixture):
             ((self.author), self.assertIn),
             ((self.reader), self.assertNotIn),
         )
-        for user, fun in user_status:
+        for user, func in user_status:
             self.client.force_login(user)
             response = self.client.get(self.LIST_URL)
             object_list = response.context['object_list']
-            fun(self.note, object_list)
+            func(self.note, object_list)
