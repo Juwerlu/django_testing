@@ -17,18 +17,6 @@ NEW_SLUG = 'new_slug'
 User = get_user_model()
 
 
-# class LogicFixture(TestCase):
-
-#     @classmethod
-#     def setUpTestData(cls):
-#         cls.reader = User.objects.create(username=READER)
-#         cls.anonym_client = Client()
-#         cls.anonym_client.force_login(cls.reader)
-#         cls.form_data = {'title': TITLE,
-#                          'text': TEXT}
-#         cls.url = reverse('notes:add', args=None)
-
-
 class RoutesFixture(TestCase):
     @classmethod
     def setUpTestData(cls):
