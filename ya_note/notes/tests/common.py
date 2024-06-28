@@ -59,5 +59,5 @@ class LogicFixture(TestCase):
                          'text': TEXT}
         cls.form_data_edit = {
             'text': TEXT_EDIT,
-            'title': TITLE_EDIT
+            'title': TITLE_EDIT,
         }

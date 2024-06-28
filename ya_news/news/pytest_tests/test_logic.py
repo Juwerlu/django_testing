@@ -10,20 +10,25 @@ pytestmark = pytest.mark.django_db
 
 
 def test_autorised_user_create_comments(author_client, author,
-                                        form_data, detail_url, news):
+                                        detail_url, news):
+    comments_before = set(Comment.objects.all())
     comments_count = Comment.objects.count()
-    response = author_client.post(detail_url, data=form_data)
+    form_data = {'text': 'New Comment Text'}
+    response = author_client.post(detail_url,
+                                  data=form_data)
+    comments_after = set(Comment.objects.all())
+    new_comment = list(comments_after - comments_before)[0]
     assertRedirects(response, detail_url + '#comments')
     assert Comment.objects.count() == comments_count + 1
-    new_comment = Comment.objects.all().last()
     assert new_comment.text == form_data['text']
     assert new_comment.author == author
     assert new_comment.news == news
 
 
-def test_not_autorised_user_create_comments(client, form_data,
+def test_not_autorised_user_create_comments(client,
                                             detail_url, login_reverse):
     actual_count = Comment.objects.count()
+    form_data = {'text': 'New Comment Text'}
     response = client.post(detail_url, data=form_data)
     login_url = login_reverse
     expected_url = f'{login_url}?next={detail_url}'
@@ -46,7 +51,8 @@ def test_comment_bad_words_acsess(author_client, detail_url):
 
 
 def test_author_comment_edit(author_client, author, news,
-                             form_data, comment, edit_url, detail_url):
+                             comment, edit_url, detail_url):
+    form_data = {'text': 'New Comment Text'}
     response = author_client.post(edit_url, data=form_data)
     assertRedirects(response, detail_url + '#comments')
     comment.refresh_from_db()
@@ -69,14 +75,15 @@ def test_not_author_comment_delete(not_author_client, delete_url, comment):
     assert comment.exists()
 
 
-def test_not_author_comment_edit(not_author_client, author, news,
-                                 form_data, comment, edit_url):
+def test_not_author_comment_edit(not_author_client,
+                                 comment, edit_url):
     actual_count = Comment.objects.count()
-    response = not_author_client.post(edit_url, data=form_data)
+    form_data = {'text': 'New Comment Text'}
+    response = not_author_client.post(edit_url,
+                                      data=form_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    comment_text_old = comment.text
-    comment.refresh_from_db()
+    new_comment = Comment.objects.get()
     assert Comment.objects.count() == actual_count
-    assert comment.text == comment_text_old
-    assert comment.author == author
-    assert comment.news == news
+    assert new_comment.text == comment.text
+    assert new_comment.author == comment.author
+    assert new_comment.news == comment.news

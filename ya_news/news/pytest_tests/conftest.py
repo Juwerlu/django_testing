@@ -85,21 +85,6 @@ def comments_list(author, news):
 
 
 @pytest.fixture
-def id_news_for_args(news):
-    return (news.id, )
-
-
-@pytest.fixture
-def id_comment_for_args(comment):
-    return (comment.id, )
-
-
-@pytest.fixture
-def form_data():
-    return {'text': 'New Comment Text'}
-
-
-@pytest.fixture
 def home_url():
     return reverse('news:home')
 

@@ -23,29 +23,33 @@ def test_redirects(client, name, comment_object):
 
 
 @pytest.mark.parametrize(
-    'client, name, status, args',
+    'client, url, status',
     (
-        (pytest.lazy_fixture('anonym_client'), 'news:home',
-         HTTPStatus.OK, None),
-        (pytest.lazy_fixture('anonym_client'), 'news:detail',
-         HTTPStatus.OK, pytest.lazy_fixture('id_news_for_args')),
-        (pytest.lazy_fixture('anonym_client'), 'users:login',
-         HTTPStatus.OK, None),
-        (pytest.lazy_fixture('anonym_client'), 'users:logout',
-         HTTPStatus.OK, None),
-        (pytest.lazy_fixture('anonym_client'), 'users:signup',
-         HTTPStatus.OK, None),
-        (pytest.lazy_fixture('not_author_client'), 'news:edit',
-         HTTPStatus.NOT_FOUND, pytest.lazy_fixture('id_comment_for_args')),
-        (pytest.lazy_fixture('not_author_client'), 'news:delete',
-         HTTPStatus.NOT_FOUND, pytest.lazy_fixture('id_comment_for_args')),
-        (pytest.lazy_fixture('author_client'), 'news:edit',
-         HTTPStatus.OK, pytest.lazy_fixture('id_comment_for_args')),
-        (pytest.lazy_fixture('author_client'), 'news:delete',
-         HTTPStatus.OK, pytest.lazy_fixture('id_comment_for_args')),
+        (pytest.lazy_fixture('anonym_client'), reverse('news:home'),
+         HTTPStatus.OK),
+        (pytest.lazy_fixture('anonym_client'),
+         pytest.lazy_fixture('detail_url'),
+         HTTPStatus.OK),
+        (pytest.lazy_fixture('anonym_client'), reverse('users:login'),
+         HTTPStatus.OK),
+        (pytest.lazy_fixture('anonym_client'), reverse('users:logout'),
+         HTTPStatus.OK),
+        (pytest.lazy_fixture('anonym_client'), reverse('users:signup'),
+         HTTPStatus.OK),
+        (pytest.lazy_fixture('not_author_client'),
+         pytest.lazy_fixture('edit_url'),
+         HTTPStatus.NOT_FOUND),
+        (pytest.lazy_fixture('not_author_client'),
+         pytest.lazy_fixture('delete_url'),
+         HTTPStatus.NOT_FOUND),
+        (pytest.lazy_fixture('author_client'),
+         pytest.lazy_fixture('edit_url'),
+         HTTPStatus.OK),
+        (pytest.lazy_fixture('author_client'),
+         pytest.lazy_fixture('delete_url'),
+         HTTPStatus.OK),
     )
 )
-def test_home_availability_for_users(client, name, status, args):
-    url = reverse(name, args=args)
+def test_home_availability_for_users(client, url, status):
     response = client.get(url)
     assert response.status_code == status
