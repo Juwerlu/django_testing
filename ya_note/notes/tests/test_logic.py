@@ -19,8 +19,8 @@ class TestLogic(LogicFixture):
         notes_before = set(Note.objects.all())
         self.reader_client.post(self.add_url, data=self.form_data_edit)
         notes_after = set(Note.objects.all())
-        self.assertEqual(len(notes_after), len(notes_before) + 1)
-        new_note = list(notes_after - notes_before)[0]
+        self.assertEqual(len(notes_after - notes_before), 1)
+        new_note = (notes_after - notes_before).pop()
         self.assertEqual(new_note.text, self.form_data_edit['text'])
         self.assertEqual(new_note.title, self.form_data_edit['title'])
         self.assertEqual(new_note.author, self.reader)
@@ -42,8 +42,8 @@ class TestLogic(LogicFixture):
         notes_before = set(Note.objects.all())
         self.reader_client.post(self.add_url, data=self.form_data_edit)
         notes_after = set(Note.objects.all())
-        self.assertEqual(len(notes_after), len(notes_before) + 1)
-        new_note = list(notes_after - notes_before)[0]
+        self.assertEqual(len(notes_after - notes_before), 1)
+        new_note = (notes_after - notes_before).pop()
         max_slug_length = new_note._meta.get_field('slug').max_length
         expected_slug = slugify(self.form_data_edit['title'][:max_slug_length])
         self.assertEqual(new_note.slug, expected_slug)

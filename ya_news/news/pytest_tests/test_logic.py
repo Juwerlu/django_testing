@@ -16,8 +16,8 @@ def test_autorised_user_create_comments(author_client, author,
     response = author_client.post(detail_url,
                                   data=form_data)
     comments_after = set(Comment.objects.all())
-    assert len(comments_after) == len(comments_before) + 1
-    new_comment = list(comments_after - comments_before)[0]
+    assert len(comments_after - comments_before) == 1
+    new_comment = (comments_after - comments_before).pop()
     assertRedirects(response, detail_url + '#comments')
     assert new_comment.text == form_data['text']
     assert new_comment.author == author
