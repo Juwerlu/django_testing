@@ -12,14 +12,13 @@ pytestmark = pytest.mark.django_db
 def test_autorised_user_create_comments(author_client, author,
                                         detail_url, news):
     comments_before = set(Comment.objects.all())
-    comments_count = Comment.objects.count()
     form_data = {'text': 'New Comment Text'}
     response = author_client.post(detail_url,
                                   data=form_data)
     comments_after = set(Comment.objects.all())
+    assert len(comments_after) == len(comments_before) + 1
     new_comment = list(comments_after - comments_before)[0]
     assertRedirects(response, detail_url + '#comments')
-    assert Comment.objects.count() == comments_count + 1
     assert new_comment.text == form_data['text']
     assert new_comment.author == author
     assert new_comment.news == news
@@ -55,10 +54,10 @@ def test_author_comment_edit(author_client, author, news,
     form_data = {'text': 'New Comment Text'}
     response = author_client.post(edit_url, data=form_data)
     assertRedirects(response, detail_url + '#comments')
-    comment.refresh_from_db()
-    assert comment.text == form_data['text']
-    assert comment.author == author
-    assert comment.news == news
+    edit_comment = Comment.objects.get(id=comment.id)
+    assert edit_comment.text == form_data['text']
+    assert edit_comment.author == author
+    assert edit_comment.news == news
 
 
 def test_author_comment_delete(author_client, detail_url, delete_url, comment):
@@ -82,8 +81,8 @@ def test_not_author_comment_edit(not_author_client,
     response = not_author_client.post(edit_url,
                                       data=form_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    new_comment = Comment.objects.get()
     assert Comment.objects.count() == actual_count
-    assert new_comment.text == comment.text
-    assert new_comment.author == comment.author
-    assert new_comment.news == comment.news
+    not_edit_comment = Comment.objects.get(id=comment.id)
+    assert not_edit_comment.text == comment.text
+    assert not_edit_comment.author == comment.author
+    assert not_edit_comment.news == comment.news

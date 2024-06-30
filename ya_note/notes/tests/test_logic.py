@@ -16,13 +16,11 @@ class TestLogic(LogicFixture):
         self.assertEqual(notes_count, current_notes_count)
 
     def test_login_user_can_create_note(self):
-        current_notes_count = Note.objects.count()
         notes_before = set(Note.objects.all())
         self.reader_client.post(self.add_url, data=self.form_data_edit)
         notes_after = set(Note.objects.all())
+        self.assertEqual(len(notes_after), len(notes_before) + 1)
         new_note = list(notes_after - notes_before)[0]
-        notes_count = Note.objects.count()
-        self.assertEqual(notes_count, current_notes_count + 1)
         self.assertEqual(new_note.text, self.form_data_edit['text'])
         self.assertEqual(new_note.title, self.form_data_edit['title'])
         self.assertEqual(new_note.author, self.reader)
@@ -41,21 +39,20 @@ class TestLogic(LogicFixture):
         )
 
     def test_slug_autho_create(self):
-        current_notes_count = Note.objects.count()
         notes_before = set(Note.objects.all())
         self.reader_client.post(self.add_url, data=self.form_data_edit)
         notes_after = set(Note.objects.all())
+        self.assertEqual(len(notes_after), len(notes_before) + 1)
         new_note = list(notes_after - notes_before)[0]
-        notes_count = Note.objects.count()
-        self.assertEqual(notes_count, current_notes_count + 1)
-        expected_slug = slugify(self.form_data_edit['title'][:100])
+        max_slug_length = new_note._meta.get_field('slug').max_length
+        expected_slug = slugify(self.form_data_edit['title'][:max_slug_length])
         self.assertEqual(new_note.slug, expected_slug)
 
     def test_author_edit(self):
         response = self.author_client.post(self.edit_url,
                                            data=self.form_data_edit)
         self.assertRedirects(response, self.note_url)
-        edit_note = Note.objects.get()
+        edit_note = Note.objects.get(id=self.note.id)
         self.assertEqual(edit_note.title,
                          self.form_data_edit['title'])
         self.assertEqual(edit_note.text,
@@ -66,7 +63,7 @@ class TestLogic(LogicFixture):
         response = self.reader_client.post(self.edit_url,
                                            data=self.form_data_edit)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        not_edit_note = Note.objects.get()
+        not_edit_note = Note.objects.get(id=self.note.id)
         self.assertEqual(not_edit_note.text, self.form_data['text'])
         self.assertEqual(not_edit_note.title, self.form_data['title'])
         self.assertEqual(not_edit_note.author, self.author)
